@@ -1,3 +1,10 @@
+/*
+ * @Author: YourName
+ * @Date: 2021-12-31 17:21:57
+ * @LastEditTime: 2022-01-04 15:23:27
+ * @Description: 
+ * @版权声明
+ */
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const path = require('path')
@@ -18,6 +25,21 @@ module.exports = {
             warnings: false,
             errors: false
         },
+    },
+    devServer: {
+        // 配置反向代理
+        proxy: {
+          //登录接口代理
+            '/DataDir': {
+              target: 'http://120.76.201.88:88/DataDir/', //这里可以跟随项目实际部署服务器来
+              changeOrigin: true,
+              ws: true,
+              pathRewrite: {
+                '^/DataDir': '/' //自定义
+              }
+            }
+        },
+
     },
     configureWebpack: {
         plugins: [

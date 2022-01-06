@@ -1,11 +1,15 @@
 <template>
   <div id="cesiumContainer"></div>
+  <Menu current="cesium" />
 </template>
 
 <script>
 import { getCurrentInstance } from "vue";
+import Menu from "../Menu/index.vue"
+
 export default {
   name: "Cesium",
+  components: { Menu },
   setup() {},
   mounted() {
     this.initMap();

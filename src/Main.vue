@@ -1,10 +1,13 @@
 <template>
-  <div id="nav">
-    <router-link to="/">二维</router-link> |
-    <router-link to="/Map3D">三维</router-link>
-  </div>
   <router-view />
 </template>
+
+<script>
+
+export default {
+  components: {  },
+};
+</script>
 
 <style lang="scss">
 #main {
@@ -13,18 +16,5 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
-
-#nav {
-  padding: 10px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
 }
 </style>

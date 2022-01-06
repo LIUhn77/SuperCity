@@ -42,34 +42,34 @@ export default {
       let feaInfoDiv = document.getElementById("feature-info-div");
       let olContainer = document.getElementById("olContainer");
       //"pointermove"  监听鼠标移动事件，略卡顿
-      this.map.on("singleclick", (e) => {
-        if (selectedFea !== null) {
-          selectedFea.setStyle(undefined);
-          selectedFea = null;
-        }
-        let feature = this.map.forEachFeatureAtPixel(
-          e.pixel,
-          (feature) => feature
-        );
-        if (feature) {
-          this.featureInfo = [];
-          this.featureInfo.push("城市：" + feature.values_.name);
-          this.featureInfo.push("编号：" + feature.values_.adcode);
-          this.featureInfo.push("经度：" + feature.values_.center[0]);
-          this.featureInfo.push("纬度：" + feature.values_.center[1]);
-          selectedFea = feature;
-          selectedFea.setStyle(highlightStyle);
+      // this.map.on("singleclick", (e) => {
+      //   if (selectedFea !== null) {
+      //     selectedFea.setStyle(undefined);
+      //     selectedFea = null;
+      //   }
+      //   let feature = this.map.forEachFeatureAtPixel(
+      //     e.pixel,
+      //     (feature) => feature
+      //   );
+      //   if (feature) {
+      //     this.featureInfo = [];
+      //     this.featureInfo.push("城市：" + feature.values_.name);
+      //     this.featureInfo.push("编号：" + feature.values_.adcode);
+      //     this.featureInfo.push("经度：" + feature.values_.center[0]);
+      //     this.featureInfo.push("纬度：" + feature.values_.center[1]);
+      //     selectedFea = feature;
+      //     selectedFea.setStyle(highlightStyle);
 
-          //跟随移动的信息框
-          this.isShowFeaInfoDiv = true;
-          olContainer.style.cursor = "pointer";
-          feaInfoDiv.style.left = e.pixel[0] + 5 + "px";
-          feaInfoDiv.style.top = e.pixel[1] - 100 + "px";
-        } else {
-          olContainer.style.cursor = "default";
-          this.isShowFeaInfoDiv = false;
-        }
-      });
+      //     //跟随移动的信息框
+      //     this.isShowFeaInfoDiv = true;
+      //     olContainer.style.cursor = "pointer";
+      //     feaInfoDiv.style.left = e.pixel[0] + 5 + "px";
+      //     feaInfoDiv.style.top = e.pixel[1] - 100 + "px";
+      //   } else {
+      //     olContainer.style.cursor = "default";
+      //     this.isShowFeaInfoDiv = false;
+      //   }
+      // });
     },
   },
   watch: {

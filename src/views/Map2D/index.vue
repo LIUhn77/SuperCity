@@ -1,8 +1,8 @@
 <template>
   <div id="olContainer">
-    <Rain />
     <PointerMove :map="map" />
   </div>
+  <Menu current="ol" />
 </template>
 
 <script>
@@ -15,14 +15,14 @@ import GeoJSON from "ol/format/GeoJSON";
 import { Fill, Stroke, Style } from "ol/style";
 import { Vector as VectorSource } from "ol/source";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
-
+import Menu from "../Menu/index.vue";
 import GDGeoJson from "@/data/gdVector.json";
-import Rain from "@/components/Rain/index.vue";
 import PointerMove from "@/components/MapInteraction/pointerMove.vue";
+import { mapSelect } from "@/components/PubilcFunction/olFunction.js";
 
 export default {
   name: "OpenLayers",
-  components: { Rain, PointerMove },
+  components: { PointerMove, Menu },
   data() {
     return {
       map: null,
@@ -31,6 +31,7 @@ export default {
   mounted() {
     this.initMap();
     this.initGDGeoJson();
+    // this.addPointerMoveEvent();
   },
   methods: {
     initMap() {
@@ -71,7 +72,9 @@ export default {
           zoom: 9,
         }),
       });
+      // mapSelect(this.map, 1);
     },
+
     initGDGeoJson() {
       const vectorSource = new VectorSource({
         features: new GeoJSON().readFeatures(GDGeoJson),
