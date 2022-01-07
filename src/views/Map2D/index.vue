@@ -69,7 +69,7 @@ export default {
         view: new View({
           projection: "EPSG:4326",
           center: [113.564839, 22.948857],
-          zoom: 9,
+          zoom: 7,
         }),
       });
       // mapSelect(this.map, 1);
