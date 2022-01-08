@@ -1,6 +1,6 @@
 <template>
   <div id="typhoon-marker">
-    <img src="/DataDir/images/typhoon-marker.png" alt="" />
+    <img src="./images/typhoon-marker.png" alt="" />
   </div>
 </template>
 
