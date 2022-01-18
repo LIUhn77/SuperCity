@@ -1,7 +1,7 @@
 /*
  * @Author: LiuHN
  * @Date: 2021-12-31 17:21:58
- * @LastEditTime: 2022-01-08 15:50:54
+ * @LastEditTime: 2022-01-14 16:40:46
  * @Description: 
  * @版权声明
  */
@@ -10,17 +10,17 @@ import Main from "./Main.vue";
 import router from "./router";
 import store from "./store";
 import ElementPlus from 'element-plus'
+import DateFormat from './data/date.format.js'
 import 'element-plus/dist/index.css'
 import * as Icons from '@element-plus/icons-vue'
 
 var cesium = require('cesium/Source/Cesium');
 var widgets = require('cesium/Source/Widgets/widgets.css');
 
-
 const app = createApp(Main);
 app.config.globalProperties.$Cesium = cesium;
 app.config.globalProperties.$Widgets = widgets;
-app.use(store).use(router).use(ElementPlus).mount("#main");
+app.use(store).use(router).use(ElementPlus).use(DateFormat).mount("#main");
 
 //组册图标element-plus/icons
 Object.keys(Icons).forEach(key => {

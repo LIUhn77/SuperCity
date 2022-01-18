@@ -1,6 +1,10 @@
 <template>
-  <div id="typhoon-marker">
-    <img src="./images/typhoon-marker.png" alt="" />
+  <div :id="markerID" style="position: absolute">
+    <img
+      class="typhoon-marker"
+      src="/DataDir/images/typhoon-marker.webp"
+      alt=""
+    />
   </div>
 </template>
 
@@ -13,19 +17,29 @@ import { Stroke, Fill, Text, Style, Icon } from "ol/style";
 import { Circle, Polygon } from "ol/geom";
 export default {
   props: {
-    selectedFeaData: null,
+    selectedFeaData: Object,
   },
   data() {
     return {
       map: this.$parent.map,
       popup: null,
+      radiusLayer: null,
+      markerID: `typhoon-marker-${this.selectedFeaData.id}`,
     };
   },
   methods: {
-    computeRadiusPoints(centerCoor,radiusData, color,interpolationAngle=1) {
+    /**
+     * 根据风圈大小数据插值计算风圈坐标点
+     * @param {Array} centerCoor 风圈中心点坐标[112,23]
+     * @param {Array} radiusData 风圈大小数组 [nw,sw,se,ne] 单位km
+     * @param {String} color 风圈颜色
+     * @param {Int} interpolationAngle 插值大小，默认是1°一个插值点
+     * @returns ol.feature
+     */
+    computeRadiusPoints(centerCoor, radiusData, color, interpolationAngle = 1) {
       //1°=111319.49079327358m=111.31945km
       let coorArr = [];
-      let angle = 0; 
+      let angle = 0;
       for (let j = 1; j <= 4; j++) {
         let r = radiusData[j - 1] / 111.31945; //半径 转成°为单位
         for (let i = 1; i <= 90 / interpolationAngle; i++) {
@@ -43,10 +57,14 @@ export default {
           color: color,
         }),
       });
-      debugger
       feature.setStyle(style);
       return feature;
     },
+    
+    /**
+     * 绘制台风风圈
+     * @param {object} value 要素数据
+     */
     drawTyphoonRadius(value) {
       let feaArr = [];
       if (value.radius7 != 0) {
@@ -56,10 +74,14 @@ export default {
           value.radius7_quad.sw,
           value.radius7_quad.se,
           value.radius7_quad.ne,
-
-          
         ];
-        feaArr.push(this.computeRadiusPoints(centerCoor,radiusData, `rgba(244, 208, 0,0.4)`));
+        feaArr.push(
+          this.computeRadiusPoints(
+            centerCoor,
+            radiusData,
+            `rgba(244, 208, 0,0.4)`
+          )
+        );
         if (value.radius10 != 0) {
           radiusData = [
             value.radius10_quad.nw,
@@ -67,7 +89,13 @@ export default {
             value.radius10_quad.se,
             value.radius10_quad.ne,
           ];
-          feaArr.push(this.computeRadiusPoints(centerCoor,radiusData,`rgba(244, 208, 0,0.6)`));
+          feaArr.push(
+            this.computeRadiusPoints(
+              centerCoor,
+              radiusData,
+              `rgba(244, 208, 0,0.6)`
+            )
+          );
         }
         if (value.radius12 != 0) {
           radiusData = [
@@ -76,20 +104,26 @@ export default {
             value.radius12_quad.se,
             value.radius12_quad.ne,
           ];
-          feaArr.push(this.computeRadiusPoints(centerCoor,radiusData, `rgba(244, 208, 0,0.8)`));
+          feaArr.push(
+            this.computeRadiusPoints(
+              centerCoor,
+              radiusData,
+              `rgba(244, 208, 0,0.8)`
+            )
+          );
         }
         let vectorSource = new Source.Vector({
           features: feaArr,
         });
-        var vectorLayer = new Layer.Vector({
+        this.radiusLayer = new Layer.Vector({
           source: vectorSource,
         });
-        this.map.addLayer(vectorLayer);
+        this.map.addLayer(this.radiusLayer);
       }
     },
   },
   mounted() {
-    const element = document.getElementById("typhoon-marker");
+    const element = document.getElementById(this.markerID);
     this.popup = new Overlay({
       element: element,
       positioning: "center-center",
@@ -103,12 +137,17 @@ export default {
       handler(value) {
         this.$nextTick(() => {
           this.popup.setPosition([value.longitude, value.latitude]);
+          this.map.removeLayer(this.radiusLayer);
           this.drawTyphoonRadius(value);
         });
       },
       immediate: true,
       depth: true,
     },
+  },
+  beforeUnmount() {
+    //组件销毁前需删除风圈
+    this.map.removeLayer(this.radiusLayer);
   },
 };
 </script>
@@ -125,12 +164,9 @@ export default {
     transform: rotate(-360deg);
   }
 }
-#typhoon-marker {
-  position: absolute;
-  img {
-    height: 40px;
-    width: 40px;
-    animation: change 4s linear infinite;
-  }
+.typhoon-marker {
+  height: 40px;
+  width: 40px;
+  animation: change 4s linear infinite;
 }
 </style>

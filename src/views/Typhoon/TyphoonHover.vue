@@ -28,7 +28,7 @@
 import Overlay from "ol/Overlay";
 export default {
   props: {
-    hoverFeaData: null,
+    hoverFeaData: Object,
   },
   data() {
     return {
@@ -50,8 +50,6 @@ export default {
     this.map.addOverlay(this.popup);
   },
   methods: {
-    //经度（东西方向）1米实际度：360°/31544206m = 1.141255544679108e-5 = 0.00001141°
-    //纬度（南北方向）1米实际度：360°/40030173m = 8.993216192195822e-6 = 0.00000899°
   },
   watch: {
     hoverFeaData: {

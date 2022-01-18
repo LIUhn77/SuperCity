@@ -51,7 +51,7 @@ export default {
   width: 100%;
   height: 100%;
   background-size: cover;
-  background-image: url("/DataDir/images/home.jpg");
+  background-image: url("/DataDir/images/home.webp");
 
   .form-wrapper {
     width: 300px;

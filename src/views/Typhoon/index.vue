@@ -1,7 +1,6 @@
 <template>
-  <!-- <div id="popup" title="Welcome to OpenLayers"></div> -->
   <div class="typhoon-panel">
-    <div>
+    <div class="typhoon-panel-list">
       <div class="typhoon-panel-title">
         <span>台风列表</span>
       </div>
@@ -24,9 +23,22 @@
         />
       </el-table>
     </div>
+    <TyphoonDataPanel
+      v-if="!!typhoonObjectArr.length"
+      :selectTyphoonData="getPanelTyphoonData"
+    />
+    <TyphoonChart 
+      v-if="!!typhoonObjectArr.length"
+      :chartsData="getPanelTyphoonData"
+    />
   </div>
+
   <TyphoonHover v-if="isShowOlPopPanel" :hoverFeaData="hoverFeaData" />
-  <TyphoonSelect v-if="isShowTyphoonMarker" :selectedFeaData="selectedFeaData"  />
+  <TyphoonSelect
+    v-for="(value, index) in typhoonData"
+    :selectedFeaData="value[1]"
+    :key="index"
+  />
 </template> 
 <script>
 import { Feature } from "ol";
@@ -39,23 +51,23 @@ import { click, pointerMove } from "ol/events/condition";
 import typhoonConfig from "./typhoonConfig.js";
 import TyphoonHover from "./TyphoonHover.vue";
 import TyphoonSelect from "./TyphoonSelect.vue";
+import TyphoonDataPanel from "./TyphoonDataPanel.vue";
+import TyphoonChart from './TyphoonChart.vue'
 import { setPointStyle, setLineStyle, createLabelStyle } from "./Function.js";
 
 export default {
   name: "typhoonButton",
-  components: { TyphoonHover, TyphoonSelect },
+  components: { TyphoonHover, TyphoonSelect, TyphoonDataPanel,TyphoonChart },
   props: {},
   data() {
     return {
       map: this.$parent.$parent.map,
       /**台风列表 */
       typhoonList: [],
-      /**台风数据数组 */
-      typhoonData: [],
-      /**台风图层 id-layer*/
-      typhoonLayers: new Map(),
-      /**台风Select id-[moveSelect,ClickSelect]*/
-      typhoonSelects: new Map(),
+      /**所有勾选的台风 panel展示数据、layer、selcet等 */
+      typhoonObjectArr: [],
+      /**台风选中要素 id-selectFeature */
+      typhoonData: new Map(),
       /**是否弹出台风属性窗口 */
       isShowOlPopPanel: false,
       /**选中属性信息 */
@@ -79,29 +91,52 @@ export default {
     /**
      * 台风列表勾选事件
      */
-    async handleSelect(selection, row) {
+    handleSelect(selection, row) {
       let isCheck = selection.includes(row);
       if (isCheck) {
-        //勾选增加要素
-        let data = await fetch(`/DataDir/Typhoon/${row.id}.json`).then((res) =>
-          res.json()
-        );
-        let layer = this.addTyphoonFea(data);
-        this.typhoonLayers.set(data.nno, layer);
-        let select = this.addMoveInteraction(layer);
-        let selectMarker = this.addClickInteraction(layer);
-        this.typhoonSelects.set(row.id, [select, selectMarker]);
+        this.selectTyphoon(row.id);
       } else {
-        //取消勾选删除要素
-        if (this.typhoonLayers.has(row.id)) {
-          this.typhoonSelects.get(row.id).map((interaction) => {
-            this.map.removeInteraction(interaction);
-          });
-          this.map.removeLayer(this.typhoonLayers.get(row.id));
-          this.typhoonLayers.delete(row.id);
-          this.typhoonSelects.delete(row.id);
-        }
+        this.deSelectTyphoon(row.id);
       }
+    },
+
+    /**
+     * 勾选某台风
+     * @param {String} id 选中台风编号
+     */
+    async selectTyphoon(id) {
+      let data = await fetch(`/DataDir/Typhoon/${id}.json`).then((res) =>
+        res.json()
+      );
+      let layer = this.addTyphoonFea(data);
+      let select = this.addMoveInteraction(layer);
+      let selectMarker = this.addClickInteraction(layer);
+      this.typhoonData.set(id, {
+        id: id,
+        ...data.points.slice(-1)[0],
+      });
+      let typhoonObject = {
+        id: id,
+        layer: layer,
+        data: data,
+        mapSelect: [select, selectMarker],
+      };
+      this.typhoonObjectArr.push(typhoonObject);
+    },
+
+    /**
+     * 取消勾选某台风
+     * @param {String} id 取消勾选台风编号
+     */
+    deSelectTyphoon(id) {
+      let index = this.typhoonObjectArr.findIndex((v) => v.id == id);
+      let deSelectData = this.typhoonObjectArr[index];
+      deSelectData.mapSelect.map((interaction) => {
+        this.map.removeInteraction(interaction);
+      });
+      this.map.removeLayer(deSelectData.layer);
+      this.typhoonObjectArr.splice(index, 1);
+      this.typhoonData.delete(id);
     },
 
     /**
@@ -140,6 +175,10 @@ export default {
         if (!selectedFea.hasOwnProperty("level")) return;
         _this.isShowTyphoonMarker = true;
         _this.selectedFeaData = selectedFea;
+        if (_this.typhoonData.get(selectedFea.id)) {
+          _this.typhoonData.delete(selectedFea.id);
+        }
+        _this.typhoonData.set(selectedFea.id, selectedFea);
       });
       return selectType;
     },
@@ -181,10 +220,13 @@ export default {
       });
       //文本
       var feaTyphoonName = new Feature({
-        geometry: new Point([data.points[0].longitude,data.points[0].latitude]), 
+        geometry: new Point([
+          data.points[0].longitude,
+          data.points[0].latitude,
+        ]),
       });
-      feaTyphoonName.setStyle(createLabelStyle(data.name)); 
-      featuresArr.push(feaTyphoonName)
+      feaTyphoonName.setStyle(createLabelStyle(data.name));
+      featuresArr.push(feaTyphoonName);
       let vectorSource = new Source.Vector({
         features: featuresArr,
       });
@@ -196,6 +238,11 @@ export default {
       return vectorLayer;
     },
   },
+  computed:{
+    getPanelTyphoonData(){
+      return this.typhoonObjectArr[this.typhoonObjectArr.length-1].data
+    }
+  }
 };
 </script>
 
