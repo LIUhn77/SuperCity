@@ -4,12 +4,12 @@
       <div class="typhoon-panel-title">
         <span>台风列表</span>
       </div>
+      <div class="typhoon-panel-list-item" :style="{height:typhoonListHeight}">
       <el-table
         :data="typhoonList"
-        style="width: 100%"
-        max-height="300"
-        :header-cell-style="{ padding: '2px 0', color: '#4d94f8' }"
-        :cell-style="{ padding: '2px 0' }"
+        :style="{height:'100%'}"
+        :header-cell-style="{ padding: '0 0', color: '#4d94f8' }"
+        :cell-style="{ padding: '0 0' }"
         @select="handleSelect"
       >
         <el-table-column type="selection" width="30" />
@@ -22,15 +22,13 @@
           width="120"
         />
       </el-table>
+      </div>
     </div>
     <TyphoonDataPanel
-      v-if="!!typhoonObjectArr.length"
+      v-if="isCheckedItem"
       :selectTyphoonData="getPanelTyphoonData"
     />
-    <TyphoonChart 
-      v-if="!!typhoonObjectArr.length"
-      :chartsData="getPanelTyphoonData"
-    />
+    <TyphoonChart v-if="isCheckedItem" :chartsData="getPanelTyphoonData" />
   </div>
 
   <TyphoonHover v-if="isShowOlPopPanel" :hoverFeaData="hoverFeaData" />
@@ -52,18 +50,19 @@ import typhoonConfig from "./typhoonConfig.js";
 import TyphoonHover from "./TyphoonHover.vue";
 import TyphoonSelect from "./TyphoonSelect.vue";
 import TyphoonDataPanel from "./TyphoonDataPanel.vue";
-import TyphoonChart from './TyphoonChart.vue'
+import TyphoonChart from "./TyphoonChart.vue";
 import { setPointStyle, setLineStyle, createLabelStyle } from "./Function.js";
 
 export default {
   name: "typhoonButton",
-  components: { TyphoonHover, TyphoonSelect, TyphoonDataPanel,TyphoonChart },
+  components: { TyphoonHover, TyphoonSelect, TyphoonDataPanel, TyphoonChart },
   props: {},
   data() {
     return {
       map: this.$parent.$parent.map,
       /**台风列表 */
       typhoonList: [],
+      typhoonListHeight: '100%',
       /**所有勾选的台风 panel展示数据、layer、selcet等 */
       typhoonObjectArr: [],
       /**台风选中要素 id-selectFeature */
@@ -122,6 +121,9 @@ export default {
         mapSelect: [select, selectMarker],
       };
       this.typhoonObjectArr.push(typhoonObject);
+      if (this.typhoonObjectArr.length == 1) {
+        this.typhoonListHeight = '200px';
+      }
     },
 
     /**
@@ -137,6 +139,9 @@ export default {
       this.map.removeLayer(deSelectData.layer);
       this.typhoonObjectArr.splice(index, 1);
       this.typhoonData.delete(id);
+      if (this.typhoonObjectArr.length == 0) {
+        this.typhoonListHeight = '100%';
+      }
     },
 
     /**
@@ -151,7 +156,11 @@ export default {
       this.map.addInteraction(selectType);
       let _this = this;
       selectType.on("select", function (e) {
-        if (e.selected.length == 0) return;
+        if (e.selected.length == 0) {
+          //当移出要素时不显示信息窗口
+          _this.isShowOlPopPanel = false;
+          return;
+        }
         let selectedFea = e.selected[0].values_;
         if (!selectedFea.hasOwnProperty("level")) return;
         _this.hoverFeaData = selectedFea;
@@ -238,11 +247,16 @@ export default {
       return vectorLayer;
     },
   },
-  computed:{
-    getPanelTyphoonData(){
-      return this.typhoonObjectArr[this.typhoonObjectArr.length-1].data
-    }
-  }
+  computed: {
+    /**验证是否有勾选的台风 */
+    isCheckedItem() {
+      return !!this.typhoonObjectArr.length;
+    },
+    /**获取最新勾选的台风数据 */
+    getPanelTyphoonData() {
+      return this.typhoonObjectArr[this.typhoonObjectArr.length - 1].data;
+    },
+  },
 };
 </script>
 

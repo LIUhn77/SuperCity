@@ -12,7 +12,7 @@
       :data="tableData"
       size="small"
       style="width: 100%"
-      max-height="300"
+      max-height="140"
       :header-cell-style="{ padding: '2px 0', color: '#4d94f8' ,textAlign:'center'}"
       :cell-style="{ padding: '2px 0',textAlign:'center' }"
     >

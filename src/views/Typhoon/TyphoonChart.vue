@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import * as echarts from "echarts";
+import CommonEchart from "@/utils/echart-utils.js";
 export default {
   props: {
     chartsData: Object,
@@ -23,14 +23,8 @@ export default {
       myChart: null,
     };
   },
-  beforeUnmount() {
-    this.myChart.clear();
-  },
-  mounted() {
-    var chartDom = document.getElementById("typhoon-chart");
-    this.myChart = echarts.init(chartDom);
-    // this.renderChart(this.chartsData);
-  },
+  beforeUnmount() {},
+  mounted() {},
   methods: {
     processData(data) {
       let value = {
@@ -45,54 +39,23 @@ export default {
     },
     renderChart(data) {
       let value = this.processData(data);
-      debugger;
-      let option = {
-        title: {
-          text: this.chartsData.name + "---风速",
-        },
-        animationDuration: 5000,
-        tooltip: {
-          order: "valueDesc",
-          show: true, 
-          trigger: "axis",
-          triggerOn: 'mousemove|click',  
-          // formatter: function (params) {
-          //   return params[0].value;
-          // },
-          // axisPointer: {
-          //   animation: false,
-          // },
-        },
-        xAxis: {
-          type: "category",
-          splitLine: {
-            // show: false,
-          },
-          data: value.timeArr,
-        },
-        yAxis: {
-          type: "value",
-          boundaryGap: [0, "100%"],
-          splitLine: {
-            // show: false,
-          },
-        },
-        series: [
-          {
-            name: "Fake Data",
-            type: "line",
-            showSymbol: false,
-            data: value.speedArr,
-          },
-        ],
-      };
-      this.myChart.setOption(option);
+      let legend = ["风速"];
+      let grid = [{ x: "13%", x2: "5%", y: "10%", y2: "23%" }];
+      this.myChart = CommonEchart.getTyphoonSpeedChart(
+        "typhoon-chart",
+        legend,
+        value.timeArr,
+        [value.speedArr],
+        grid,
+        "m/s"
+      );
     },
   },
   watch: {
     chartsData: {
       handler(value) {
         this.$nextTick(() => {
+          if (this.myChart) this.myChart.clear();
           this.renderChart(value);
         });
       },
@@ -110,6 +73,6 @@ export default {
 }
 #typhoon-chart {
   width: 100%;
-  height: 300px;
+  height: 100%;
 }
 </style>
