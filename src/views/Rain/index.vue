@@ -1,5 +1,24 @@
 <template>
-  <el-button class="rain-button" @click="onClick">点我</el-button>
+  <div class="rain-panel">
+    <div class="rain-panel-list">
+      <div class="rain-panel-title">
+        <span>降雨预测</span>
+      </div>
+      <div class="rain-panel-list-item">
+        <el-table
+          ref="table"
+          :data="rainList"
+          :style="{ height: '100%' }"
+          :header-cell-style="{ padding: '2px 0', color: '#4d94f8' }"
+          :cell-style="{ padding: '2px 0' }"
+          @select="handleSelect"
+        >
+          <el-table-column type="selection" width="30" />
+          <el-table-column prop="date" label="日期" width="270" />
+        </el-table>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -7,23 +26,86 @@ import { Feature } from "ol";
 import { Stroke, Fill, Text, Style } from "ol/style";
 import * as Source from "ol/source";
 import * as Layer from "ol/layer";
-import { Point, Polygon } from "ol/geom";
-import rainData from "../../data/rain.json";
+import Select from "ol/interaction/Select";
+import { Polygon } from "ol/geom";
+import { pointerMove } from "ol/events/condition";
 export default {
-  name: "rainButton",
+  name: "rain",
   data() {
     return {
-      vectorSource: null,
+      map: this.$parent.$parent.map,
+      isShowOlPopPanel: false,
+      rainLayers: new Map(),
+      rainList: [],
     };
   },
+  mounted() {
+    /**初始化时获取降雨列表 */
+    let _this = this;
+    fetch(`/DataDir/Rain/index.json`)
+      .then((res) => res.json())
+      .then((data) => {
+        data.map((v) => {
+          _this.rainList.push({
+            date: v,
+          });
+        });
+      });
+  },
   methods: {
-    onClick() {
-      let map = this.$parent.map;
-      this.addPolygon();
+    /**
+     * 绑定鼠标移动至要素时事件
+     * @abstract 为什么不用map.on（）绑定移动事件能---通过实际操作发现这种方法卡顿感强
+     */
+    addMoveInteraction(layer) {
+      const selectType = new Select({
+        condition: pointerMove,
+        layers: [layer],
+      });
+      this.map.addInteraction(selectType);
+      let _this = this;
+      selectType.on("select", function (e) {
+        if (e.selected.length == 0) {
+          //当移出要素时不显示信息窗口
+          _this.isShowOlPopPanel = false;
+          return;
+        }
+        debugger;
+        let selectedFea = e.selected[0].values_;
+        _this.isShowOlPopPanel = true;
+      });
+      return selectType;
     },
 
-    addPolygon() {
-      let map = this.$parent.map;
+    handleSelect(selection, row) {
+      let isCheck = selection.includes(row);
+      if (this.rainLayers.size == 1) {
+        //如果多选了，则将旧的移除，达到单选效果
+        this.$refs.table.toggleRowSelection(selection[0], false);
+        this.deSelectRain(selection[0].date);
+      }
+      if (isCheck) {
+        this.selectRain(row.date);
+      } else {
+        this.deSelectRain(row.date);
+      }
+    },
+
+    async selectRain(id) {
+      let data = await fetch(`/DataDir/Rain/${id}.json`).then((res) =>
+        res.json()
+      );
+      let layer = this.addPolygon(data);
+      this.rainLayers.set(id, layer);
+      // this.addMoveInteraction(layer);
+    },
+
+    deSelectRain(id) {
+      this.map.removeLayer(this.rainLayers.get(id));
+      this.rainLayers.delete(id);
+    },
+
+    addPolygon(rainData) {
       let result = [];
       rainData.contours.map((v) => {
         let polygonArr = [];
@@ -43,6 +125,10 @@ export default {
           }),
         });
         feature.setStyle(style);
+        feature.setProperties({
+          level: "rain",
+          date:rainData.date
+        });
         result.push(feature);
       });
 
@@ -52,78 +138,28 @@ export default {
       var vectorLayer = new Layer.Vector({
         source: this.vectorSource,
       });
-      map.addLayer(vectorLayer);
-    },
-
-    /**添加点 */
-    addPoints() {
-      let map = this.$parent.map;
-      map.on("click", function (evt) {
-        var coordinate = evt.coordinate; //鼠标单击点的坐标
-        console.log(coordinate);
-        //新建一个要素ol.Feature
-        var newFeature = new Feature({
-          geometry: new Point(coordinate), //几何信息
-          name: "标注点",
-        });
-        newFeature.setStyle(this.createLabelStyle(newFeature)); //设置要素样式
-        this.vectorSource.addFeature(newFeature);
-      });
-      let result = [];
-      let a = { color: [], value: [], symbol: [] };
-      rainData.contours.map((v) => {
-        a.color.push(v.color);
-        a.value.push(v.value);
-        a.symbol.push(v.symbol);
-        v.latAndLong.map((v2) => {
-          var iconFeature = new Feature({
-            geometry: new Point([v2[1], v2[0]]),
-            name: ">", //名称属性
-            population: 2115, //人口数（万）
-          });
-          iconFeature.setStyle(this.createLabelStyle(iconFeature));
-          result.push(iconFeature);
-        });
-      });
-      this.vectorSource = new Source.Vector({
-        features: result,
-      });
-      var vectorLayer = new Layer.Vector({
-        source: this.vectorSource,
-      });
-      map.addLayer(vectorLayer);
-    },
-
-    /**点样式 */
-    createLabelStyle(feature) {
-      return new Style({
-        text: new Text({
-          textAlign: "center", //位置
-          textBaseline: "middle", //基准线
-          font: "normal 14px 微软雅黑", //文字样式
-          text: feature.get("name"), //文本内容
-          fill: new Fill({
-            //文本填充样式（即文字颜色)
-            color: "#000",
-          }),
-          stroke: new Stroke({
-            color: "#F00",
-            width: 2,
-          }),
-        }),
-      });
+      this.map.addLayer(vectorLayer);
+      return vectorLayer;
     },
   },
+  computed: {},
 };
 </script>
 
 <style lang="scss">
-.rain-button {
-  height: 30px;
-  width: 60px;
-  background-color: aqua;
-  position: fixed;
-  z-index: 1;
-  right: 0px;
+.rain-panel {
+  width: 300px;
+  height: 100%;
+  min-height: 640px;
+  position: absolute;
+  top: 0;
+  left: 70px;
+  background-color: white;
+  border: 1px solid black;
+  .rain-panel-title {
+    color: #166abe;
+    background-color: #f3f4f7;
+    border: 1px solid #adadad;
+  }
 }
 </style>

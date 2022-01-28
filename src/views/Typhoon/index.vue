@@ -54,7 +54,7 @@ import TyphoonChart from "./TyphoonChart.vue";
 import { setPointStyle, setLineStyle, createLabelStyle } from "./Function.js";
 
 export default {
-  name: "typhoonButton",
+  name: "typhoon",
   components: { TyphoonHover, TyphoonSelect, TyphoonDataPanel, TyphoonChart },
   props: {},
   data() {
