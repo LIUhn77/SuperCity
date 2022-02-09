@@ -148,6 +148,7 @@ export default {
   beforeUnmount() {
     //组件销毁前需删除风圈
     this.map.removeLayer(this.radiusLayer);
+    this.map.removeOverlay(this.popup);
   },
 };
 </script>

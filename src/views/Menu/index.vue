@@ -6,7 +6,7 @@
       @click="onTyphoonClick"
     />
     <MenuItem itemName="降雨" image="/DataDir/images/Rain.png" @click="onRainClick"/>
-    <MenuItem itemName="风场" image="/DataDir/images/Rain.png" />
+    <MenuItem itemName="轨迹" image="/DataDir/images/Rain.png" @click="onFlightClick"/>
     <TyphoonPanel v-if="isShowTyphoon"/>
     <RainPanel v-if="isShowRain" />
     <SwitchButton :to="to" :content="content" @click="switchMapClick" />
@@ -18,6 +18,7 @@ import MenuItem from "./MenuItem.vue";
 import SwitchButton from "./SwitchButton.vue";
 import TyphoonPanel from "../Typhoon/index.vue";
 import RainPanel from "../Rain/index.vue"
+import {addFlightToMap} from "../Flight/index.js"
 export default {
   name: "Menu",
   props: {
@@ -30,7 +31,7 @@ export default {
       to: "/Map3D",
       content: "切换至三维",
       isShowTyphoon: false,
-      isShowRain:false
+      isShowRain:false,
     };
   },
   mounted() {
@@ -45,9 +46,16 @@ export default {
   methods: {
     onTyphoonClick() {
       this.isShowTyphoon = !this.isShowTyphoon;
+      this.isShowRain=this.isShowTyphoon?false:this.isShowRain;
     },
     onRainClick(){
       this.isShowRain=!this.isShowRain;
+      this.isShowTyphoon=this.isShowRain?false:this.isShowTyphoon;
+    },
+    onFlightClick(){
+      this.isShowTyphoon=false;
+      this.isShowRain=false;
+      addFlightToMap(this.$parent.map)
     },
     switchMapClick() {
       if (this.currentMap == "ol") {

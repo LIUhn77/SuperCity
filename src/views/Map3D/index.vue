@@ -135,6 +135,7 @@ export default {
         duration: 1.5,
       });
       // viewer.zoomTo(city, new Cesium.HeadingPitchRange(0, -0.5, 0));
+      
       var heightStyle = new Cesium.Cesium3DTileStyle({
         color: {
           conditions: [

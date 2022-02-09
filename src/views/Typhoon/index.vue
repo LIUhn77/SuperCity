@@ -4,24 +4,26 @@
       <div class="typhoon-panel-title">
         <span>台风列表</span>
       </div>
-      <div class="typhoon-panel-list-item" :style="{height:typhoonListHeight}">
-      <el-table
-        :data="typhoonList"
-        :style="{height:'100%'}"
-        :header-cell-style="{ padding: '0 0', color: '#4d94f8' }"
-        :cell-style="{ padding: '0 0' }"
-        @select="handleSelect"
+      <div
+        class="typhoon-panel-list-item"
       >
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="id" label="编号" width="70" />
-        <el-table-column prop="nameCN" label="中文名" width="80" />
-        <el-table-column
-          prop="name"
-          label="英文名"
-          show-overflow-tooltip
-          width="120"
-        />
-      </el-table>
+        <el-table
+          :data="typhoonList"
+           :max-height="typhoonListHeight"
+          :header-cell-style="{ padding: '0 0', color: '#4d94f8' }"
+          :cell-style="{ padding: '0 0' }"
+          @select="handleSelect"
+        >
+          <el-table-column type="selection" width="30" />
+          <el-table-column prop="id" label="编号" width="70" />
+          <el-table-column prop="nameCN" label="中文名" width="80" />
+          <el-table-column
+            prop="name"
+            label="英文名"
+            show-overflow-tooltip
+            width="120"
+          />
+        </el-table>
       </div>
     </div>
     <TyphoonDataPanel
@@ -62,7 +64,7 @@ export default {
       map: this.$parent.$parent.map,
       /**台风列表 */
       typhoonList: [],
-      typhoonListHeight: '100%',
+      typhoonListHeight: "100%",
       /**所有勾选的台风 panel展示数据、layer、selcet等 */
       typhoonObjectArr: [],
       /**台风选中要素 id-selectFeature */
@@ -122,7 +124,7 @@ export default {
       };
       this.typhoonObjectArr.push(typhoonObject);
       if (this.typhoonObjectArr.length == 1) {
-        this.typhoonListHeight = '200px';
+        this.typhoonListHeight = "200px";
       }
     },
 
@@ -140,7 +142,7 @@ export default {
       this.typhoonObjectArr.splice(index, 1);
       this.typhoonData.delete(id);
       if (this.typhoonObjectArr.length == 0) {
-        this.typhoonListHeight = '100%';
+        this.typhoonListHeight = "100%";
       }
     },
 
@@ -256,6 +258,12 @@ export default {
     getPanelTyphoonData() {
       return this.typhoonObjectArr[this.typhoonObjectArr.length - 1].data;
     },
+  },
+  beforeUnmount() {
+    //组件销毁时清除台风
+    this.typhoonObjectArr.forEach((v) => {
+      this.map.removeLayer(v.layer);
+    });
   },
 };
 </script>

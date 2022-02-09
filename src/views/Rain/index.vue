@@ -7,6 +7,7 @@
       <div class="rain-panel-list-item">
         <el-table
           ref="table"
+          v-loading="isLoading"
           :data="rainList"
           :style="{ height: '100%' }"
           :header-cell-style="{ padding: '2px 0', color: '#4d94f8' }"
@@ -37,11 +38,13 @@ export default {
       isShowOlPopPanel: false,
       rainLayers: new Map(),
       rainList: [],
+      isLoading:false
     };
   },
   mounted() {
     /**初始化时获取降雨列表 */
     let _this = this;
+    this.isLoading=true;
     fetch(`/DataDir/Rain/index.json`)
       .then((res) => res.json())
       .then((data) => {
@@ -50,6 +53,7 @@ export default {
             date: v,
           });
         });
+        this.isLoading=false;
       });
   },
   methods: {
@@ -85,7 +89,9 @@ export default {
         this.deSelectRain(selection[0].date);
       }
       if (isCheck) {
+        this.isLoading=true;
         this.selectRain(row.date);
+        
       } else {
         this.deSelectRain(row.date);
       }
@@ -97,6 +103,7 @@ export default {
       );
       let layer = this.addPolygon(data);
       this.rainLayers.set(id, layer);
+      this.isLoading=false;
       // this.addMoveInteraction(layer);
     },
 
@@ -143,6 +150,12 @@ export default {
     },
   },
   computed: {},
+  beforeUnmount(){
+    //组件销毁时清除降雨
+    this.rainLayers.forEach(layer=>{
+      this.map.removeLayer(layer);
+    })
+  }
 };
 </script>
 

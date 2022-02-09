@@ -10,6 +10,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^0.2.4",
     "@open-wc/webpack-import-meta-loader": "^0.4.7",
+    "@turf/turf": "^6.5.0",
     "cesium": "^1.88.0",
     "core-js": "^3.6.5",
     "echarts": "^5.2.2",
