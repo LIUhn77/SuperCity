@@ -2,7 +2,8 @@
   <div id="olContainer">
     <PointerMove :map="map" />
   </div>
-  <Menu current="ol" />
+  <Menu/>
+  <Toolbar />
 </template>
 
 <script>
@@ -18,11 +19,11 @@ import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import Menu from "../Menu/index.vue";
 import GDGeoJson from "@/data/gdVector.json";
 import PointerMove from "@/components/MapInteraction/pointerMove.vue";
-import { mapSelect } from "@/components/PubilcFunction/olFunction.js";
+import Toolbar from "@/components/Toolbar/index.vue";
 
 export default {
   name: "OpenLayers",
-  components: { PointerMove, Menu },
+  components: { PointerMove, Menu,Toolbar },
   data() {
     return {
       map: null,

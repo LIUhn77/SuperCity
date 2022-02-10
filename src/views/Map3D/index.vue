@@ -1,10 +1,9 @@
 <template>
   <div id="cesiumContainer"></div>
-  <Menu current="cesium" />
+  <Menu />
 </template>
 
 <script>
-import { getCurrentInstance } from "vue";
 import Menu from "../Menu/index.vue";
 import * as Cesium from "cesium";
 
@@ -17,8 +16,6 @@ export default {
   },
   methods: {
     initMap() {
-      const { proxy } = getCurrentInstance();
-      // const Cesium = proxy.$Cesium;
       var viewer = new Cesium.Viewer("cesiumContainer", {
         selectionIndicator: false,
         infoBox: false,

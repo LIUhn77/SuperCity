@@ -10,22 +10,6 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { getVectorContext } from 'ol/render';
 import { getWidth } from 'ol/extent';
 export function addFlightToMap(map) {
-    let ws=new WebSocket('ws://echo.websocket.org')//('ws://121.40.165.18:8800');
-    debugger
-    ws.onopen=function(e){
-        console.log('onopen')
-        ws.send('测试')
-    }
-    ws.onmessage=function(e){
-        console.log('onmessage',e)
-    }
-    ws.onclose=function(e){
-        console.log('onclose')
-    }
-    ws.onerror=function(e){
-        debugger
-    }
-    return
     const tileLayer = new TileLayer({
         source: new Stamen({
             layer: 'toner',

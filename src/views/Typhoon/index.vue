@@ -4,12 +4,12 @@
       <div class="typhoon-panel-title">
         <span>台风列表</span>
       </div>
-      <div
-        class="typhoon-panel-list-item"
-      >
+      <div class="typhoon-panel-list-item">
         <el-table
+          v-loading="isLoading"
+          element-loading-text="加载中..."
           :data="typhoonList"
-           :max-height="typhoonListHeight"
+          :max-height="typhoonListHeight"
           :header-cell-style="{ padding: '0 0', color: '#4d94f8' }"
           :cell-style="{ padding: '0 0' }"
           @select="handleSelect"
@@ -76,15 +76,18 @@ export default {
       /**点击时展示旋转台风图标 */
       isShowTyphoonMarker: false,
       hoverFeaData: {},
+      isLoading: false,
     };
   },
   mounted() {
     /**初始化时获取台风列表 */
     let _this = this;
+    this.isLoading = true;
     fetch(`/DataDir/Typhoon/index.json`)
       .then((res) => res.json())
       .then((data) => {
         _this.typhoonList = data;
+        _this.isLoading = false;
       });
   },
   watch: {},
@@ -106,6 +109,7 @@ export default {
      * @param {String} id 选中台风编号
      */
     async selectTyphoon(id) {
+      this.isLoading = true;
       let data = await fetch(`/DataDir/Typhoon/${id}.json`).then((res) =>
         res.json()
       );
@@ -123,6 +127,7 @@ export default {
         mapSelect: [select, selectMarker],
       };
       this.typhoonObjectArr.push(typhoonObject);
+      this.isLoading = false;
       if (this.typhoonObjectArr.length == 1) {
         this.typhoonListHeight = "200px";
       }
@@ -269,6 +274,11 @@ export default {
 </script>
 
 <style lang="scss">
+@keyframes fadenum {
+  0% {
+    transform: translateY(500px);
+  }
+}
 .typhoon-panel {
   width: 300px;
   height: 100%;
@@ -278,6 +288,8 @@ export default {
   left: 70px;
   background-color: white;
   border: 1px solid black;
+  animation: fadenum 0.5s;
+
   .typhoon-panel-title {
     color: #166abe;
     background-color: #f3f4f7;

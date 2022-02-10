@@ -8,6 +8,7 @@
         <el-table
           ref="table"
           v-loading="isLoading"
+          element-loading-text="加载中..."
           :data="rainList"
           :style="{ height: '100%' }"
           :header-cell-style="{ padding: '2px 0', color: '#4d94f8' }"
@@ -38,13 +39,13 @@ export default {
       isShowOlPopPanel: false,
       rainLayers: new Map(),
       rainList: [],
-      isLoading:false
+      isLoading: false,
     };
   },
   mounted() {
     /**初始化时获取降雨列表 */
     let _this = this;
-    this.isLoading=true;
+    this.isLoading = true;
     fetch(`/DataDir/Rain/index.json`)
       .then((res) => res.json())
       .then((data) => {
@@ -53,7 +54,7 @@ export default {
             date: v,
           });
         });
-        this.isLoading=false;
+        this.isLoading = false;
       });
   },
   methods: {
@@ -74,7 +75,6 @@ export default {
           _this.isShowOlPopPanel = false;
           return;
         }
-        debugger;
         let selectedFea = e.selected[0].values_;
         _this.isShowOlPopPanel = true;
       });
@@ -89,9 +89,8 @@ export default {
         this.deSelectRain(selection[0].date);
       }
       if (isCheck) {
-        this.isLoading=true;
+        this.isLoading = true;
         this.selectRain(row.date);
-        
       } else {
         this.deSelectRain(row.date);
       }
@@ -103,7 +102,7 @@ export default {
       );
       let layer = this.addPolygon(data);
       this.rainLayers.set(id, layer);
-      this.isLoading=false;
+      this.isLoading = false;
       // this.addMoveInteraction(layer);
     },
 
@@ -134,7 +133,7 @@ export default {
         feature.setStyle(style);
         feature.setProperties({
           level: "rain",
-          date:rainData.date
+          date: rainData.date,
         });
         result.push(feature);
       });
@@ -150,16 +149,21 @@ export default {
     },
   },
   computed: {},
-  beforeUnmount(){
+  beforeUnmount() {
     //组件销毁时清除降雨
-    this.rainLayers.forEach(layer=>{
+    this.rainLayers.forEach((layer) => {
       this.map.removeLayer(layer);
-    })
-  }
+    });
+  },
 };
 </script>
 
 <style lang="scss">
+@keyframes fadenum {
+  0% {
+    transform: translateY(500px);
+  }
+}
 .rain-panel {
   width: 300px;
   height: 100%;
@@ -169,6 +173,7 @@ export default {
   left: 70px;
   background-color: white;
   border: 1px solid black;
+  animation: fadenum 0.5s;
   .rain-panel-title {
     color: #166abe;
     background-color: #f3f4f7;
